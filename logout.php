@@ -1,55 +1,45 @@
-<?php
-session_start(); //otvorenie session
-
-unset($_SESSION["username"]); //vymazanie session
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Logout</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #0b5e99;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
-    .logout-container {
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 5px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-    .logout-container p {
-        margin-bottom: 20px;
-    }
-    .logout-container a {
-        color: ##b0f428;
-        text-decoration: none;
-    }
-    .logout-container a:hover {
-        text-decoration: underline;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .logout-box {
+            text-align: center;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        .loading-gif {
+            display: block;
+            margin: 20px auto;
+        }
+    </style>
 </head>
 <body>
+    <div class="logout-box">
+        <?php
+            session_start();
 
-<div class="logout-container">
-    <p>You have been logged out and the session has been cleared.</p>
-    <p>Redirecting you to the <a href="index.php">login page</a>...</p>
-</div>
+            unset($_SESSION["username"]);
 
+            echo 'You have logged out and cleaned session';
+
+            echo '<p><iframe src="https://giphy.com/embed/3oEjI6SIIHBdRxXI40" width="480" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/mashable-3oEjI6SIIHBdRxXI40"></a></p>';
+
+            header('Refresh: 2; URL = index.php');
+        ?>
+    </div>
 </body>
 </html>
-
-<?php
-header('Refresh: 2; URL = index.php'); // presmerovanie na prihlasenie
-?>

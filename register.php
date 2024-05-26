@@ -1,125 +1,105 @@
 <?php
-$servername = "localhost";
-$username = "rakus3a1";
-$password = "14837944,Aa";
-$dbname = "rakus3a1";
 
-// Připojení k databázi
-$conn = new mysqli($servername, $username, $password, $dbname);
+$error = " ";
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $servername = "localhost";
+    $username = "rakus3a";
+    $password = "Heslo123.";
+    $dbname = "rakus3a";
 
-// Kontrola připojení
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+    $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Funkce pro vložení nového záznamu do databáze
-function insertUser($conn, $meno, $heslo, $email) {
-    $sql = $conn->prepare("INSERT INTO t_user (username, password, email) VALUES (?, ?, ?)");
-    $sql->bind_param("sss", $meno, $heslo, $email);
-    
-    if ($sql->execute()) {
-        echo "New record created successfully";
-    } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
     }
-    
-    $sql->close();
-}
 
-// Kontrola existence uživatele
-function checkUserExists($conn, $meno) {
-    $sql = $conn->prepare("SELECT * FROM t_user WHERE username = ?");
-    $sql->bind_param("s", $meno);
-    $sql->execute();
-    $result = $sql->get_result();
-    $sql->close();
-    return $result->num_rows > 0;
-}
+    $input_username = $_POST['username'];
+    $input_password = $_POST['password'];
+    $input_confirm_password = $_POST['confirm_password'];
+    $input_email = $_POST['email'];
 
-// Zpracování formuláře
-if(isset($_POST['submit'])) {
-    $meno = $_POST['username'];
-    $heslo = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    $email = $_POST['email'];
+    $check_username_sql = "SELECT * FROM t_user WHERE username='$input_username'";
+    $result = $conn->query($check_username_sql);
+    $check_email_sql = "SELECT * FROM t_user WHERE email='$input_email'";
+    $result2 = $conn->query($check_email_sql);
 
-    if (!checkUserExists($conn, $meno)) {
-        insertUser($conn, $meno, $heslo, $email);
+    if ($result->num_rows > 0) {
+        $error = "Username already exists. Please choose a different username.";
     } else {
-        $errorMessage = "User with this username already exists.";
+        if($result2->num_rows > 0){
+            $error = "E-mail already in use";
+        } else {
+            if ($input_password !== $input_confirm_password) {
+                $error = "Passwords do not match";
+            } else {
+                $input_password = password_hash($input_password, PASSWORD_DEFAULT);
+                $insert_sql = "INSERT INTO t_user (username, password, email) VALUES ('$input_username', '$input_password', '$input_email')";
+
+                if ($conn->query($insert_sql) === TRUE) {
+                    $error = "New login created";
+                } else {
+                    $error = "User already exists";
+                }
+            }
+        }
     }
+
+    $conn->close();
 }
+
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Registration form</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #d80101;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
-    .form-container {
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 5px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    .form-container h2 {
-        margin-bottom: 20px;
-        text-align: center;
-        color: #333;
-    }
-    .form-container input[type="text"],
-    .form-container input[type="password"],
-    .form-container input[type="email"] {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        box-sizing: border-box;
-    }
-    .form-container input[type="submit"] {
-        width: 100%;
-        padding: 10px;
-        border: none;
-        border-radius: 5px;
-        background-color: #f54ab5;
-        color: #fff;
-        cursor: pointer;
-    }
-    .form-container input[type="submit"]:hover {
-        background-color: #0056b3;
-    }
-    .error-message {
-        color: red;
-        margin-top: 10px;
-        text-align: center;
-    }
-</style>
+    <title>Registration form</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #6495ED;
+        }
+        form {
+            background-color: #40E0D0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #CCCCFF; 
+            color: white;
+            cursor: pointer;
+        }
+        p {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+        }
+        a {
+            text-align: center;
+            display: block;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-
-<div class="form-container">
-    <h2>Registration Form</h2>
-    <form action="" method="post">
+    <form action="register.php" method="post">
         <input type="text" name="username" placeholder="Username" required autofocus><br>
+        <input type="email" name="email" placeholder="Email" required autofocus><br>
         <input type="password" name="password" placeholder="Password" required><br>
-        <input type="email" name="email" placeholder="Email" required><br>
-        <input type="submit" name="submit" value="Register">
+        <input type="password" name="confirm_password" placeholder="Confirm Password" required><br>
+        <input type="submit" name="login" value="Register">
+        <p><?php echo $error; ?></p>
+        <a href="index.php">Login</a>
     </form>
-    <div class="error-message"><?php if(isset($errorMessage)) { echo $errorMessage; } ?></div> <!-- Výpis chybové zprávy -->
-    <p>Already registered? <a href="index.php">Login here</a>.</p>
-</div>
-
 </body>
 </html>
